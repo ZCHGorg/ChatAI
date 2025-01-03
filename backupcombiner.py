@@ -26,7 +26,6 @@ from nltk.corpus import words, brown
 import tempfile
 import Levenshtein
 #import itertools
-import wikipedia
 
 def create_scratch_drive():
     with tempfile.NamedTemporaryFile() as f:
@@ -90,63 +89,7 @@ class SelfImprovingBot:
         self.self_learning_thread = None  # Initialize thread as an instance attribute
         self.foreground_accuracy_history = []
         # self.background_accuracy_history = []
-        self.bot_accuracy_history = {}
 
-    def generate_unique_color(self, bot_name):
-        hash_value = int(hashlib.sha256(bot_name.encode()).hexdigest(), 16)
-        color_list = [
-            "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white",
-            "light_grey", "dark_grey", "light_red", "light_green", "light_yellow",
-            "light_blue", "light_magenta", "light_cyan"
-        ]
-        color_index = hash_value % len(color_list)
-        bot_color = color_list[color_index]
-        return bot_color
-
-    def print_accuracy_drift(self, bot_name):
-        num_iterations_for_change = self.find_change_iteration(bot_name)
-
-        if len(self.foreground_accuracy_history) >= num_iterations_for_change:
-            last_n_avg_accuracy = sum(self.foreground_accuracy_history[-num_iterations_for_change:]) / num_iterations_for_change
-
-            if self.last_foreground_average_accuracy is not None:
-                if last_n_avg_accuracy > self.last_foreground_average_accuracy:
-                    avg_accuracy_color = "green"
-                    self.accuracy_change_count += 1
-                elif last_n_avg_accuracy < self.last_foreground_average_accuracy:
-                    avg_accuracy_color = "red"
-                    self.accuracy_change_count += 1
-                else:
-                    avg_accuracy_color = "blue"
-
-                bot_color = self.generate_unique_color(bot_name)
-
-                avg_accuracy_colored = colored(f"Average Accuracy: {last_n_avg_accuracy:.4f}", avg_accuracy_color)
-                bot_name_colored = colored(bot_name, bot_color, attrs=["bold"])
-
-                print(f"{bot_name_colored}, {avg_accuracy_colored}, Count: {self.accuracy_change_count}")
-                self.last_foreground_average_accuracy = last_n_avg_accuracy
-
-                # Print a separator line to separate different iterations
-                print("=" * 50)
-        else:
-            print(f"{bot_name}, Not enough iterations for accuracy comparison.")
-
-    def find_change_iteration(self, bot_name):
-        if len(self.foreground_accuracy_history) >= 2:
-            x = np.arange(len(self.foreground_accuracy_history)).reshape(-1, 1)
-            y = np.array(self.foreground_accuracy_history)
-            model = LinearRegression().fit(x, y)
-            predicted_change_iteration = int(model.predict([[len(self.foreground_accuracy_history)]]))
-            return max(10, predicted_change_iteration)  # Minimum of 10 iterations
-        else:
-            return 10  # Default value if not enough data
-
-    # def update_accuracy_history(self, bot_name, accuracy):
-    #     if bot_name in self.bot_accuracy_history:
-    #         self.bot_accuracy_history[bot_name].append(accuracy)
-    #     else:
-    #         self.bot_accuracy_history[bot_name] = [accuracy]
 
 #    def query_chatgpt(self, prompt):
 #        if time.time() - self.last_query_time < 3600:  # 3600 seconds = 1 hour
@@ -167,6 +110,7 @@ class SelfImprovingBot:
 
     def generate_response(self, user_input, lang="en"):
         with self.generate_response_lock:
+    #        lang = "en"  PROPOSED CHANGE
             context = tuple(self.context_history[-self.dynamic_context_window:])
 
             if context in self.response_cache:
@@ -175,26 +119,22 @@ class SelfImprovingBot:
             if context in self.context_history:
                 response = random.choice(self.context_history[context])
             else:
-                # Get a random article title from Wikipedia
-                article_title = wikipedia.random()
 
-                # Retrieve the article object
-                article = wikipedia.page(article_title)
+                # Generate a random paragraph (a group of sentences) from the corpus
+                random_paragraph = " ".join(" ".join(sentence) for sentence in (random.choice(brown.sents()) for _ in range(5)))
 
-                # Tokenize the article content into sentences
-                sentences = nltk.sent_tokenize(article.content)
+                # Tokenize the paragraph into sentences
+                sentences = nltk.sent_tokenize(random_paragraph)
 
-                # Process the sentences in pairs until the article is complete
-                response = ""
-                for i in range(0, len(sentences), 2):
-                    if i + 1 < len(sentences):  # Ensure there are at least two sentences remaining
-                        sentence1 = sentences[i]
-                        sentence2 = sentences[i + 1]
-                        accuracy = self.compare_sentences(sentence1, sentence2)
-                        response += f"Time organizes randomness(gen-response). Sentence1: {sentence1} Sentence2: {sentence2} Accuracy: {accuracy:.2f}\n"
-                    else:
-                        print("Article processing complete.")
-                        break
+                # Ensure there are at least two sentences
+                if len(sentences) >= 2:
+                    # Extract two consecutive sentences from the same paragraph
+                    sentence1 = sentences[0]
+                    sentence2 = sentences[1]
+                    accuracy = self.compare_sentences(sentence1, sentence2)
+                    response = f"Time organizes randomness(gen-response). Sentence1: {sentence1} Sentence2: {sentence2} Accuracy: {accuracy:.2f}"             
+                else:
+                    print("Not enough sentences in the paragraph to extract two sentences.")
 
             if self.self_code_improvement:
                 response = self.improve_own_code(response, context)
@@ -285,40 +225,7 @@ class SelfImprovingBot:
                 self.shared_context_history.pop(0)
 
     def update_learning_rate(self):
-        if self.foreground_accuracy_history:
-            foreground_average_accuracy = sum(self.foreground_accuracy_history) / len(self.foreground_accuracy_history)
-            
-            # Use the line of best fit to predict accuracy change point
-            num_iterations_for_change = self.find_change_iteration()
-
-            color_indicator = None  # Default indicator for no significant change
-
-            if self.last_foreground_average_accuracy is not None:
-                if foreground_average_accuracy > self.last_foreground_average_accuracy:
-                    color_indicator = "green"
-                elif foreground_average_accuracy < self.last_foreground_average_accuracy:
-                    color_indicator = "red"
-                else:
-                    color_indicator = "blue"
-            
-            # Update learning rate based on predicted change point
-            if len(self.foreground_accuracy_history) >= num_iterations_for_change:
-                if color_indicator == "green":
-                    self.learning_rate = min(0.7, self.learning_rate * 1.1)
-                elif color_indicator == "red":
-                    self.learning_rate = max(0.1, self.learning_rate / 1.1)
-
-            # Make sure the learning rate stays within the desired range
-            self.learning_rate = max(0.1, min(0.7, self.learning_rate))
-
-            learning_rate_color = color_indicator if color_indicator else "white"
-            lr_colored = colored(f"Learning Rate {self.learning_rate:.3f}", learning_rate_color, attrs=["bold"])
-
-            self.last_foreground_average_accuracy = foreground_average_accuracy
-
-            print(lr_colored)
-        else:
-            print("No accuracy (yet)")
+        self.learning_rate = min(0.7, 0.1 + len(self.context_history) / 1000)
 
     def analyze_response_quality(self):
             for response_tuple in self.context_history:
@@ -355,7 +262,7 @@ class SelfImprovingBot:
             if self.self_code_improvement:
                 self.foreground_accuracy_history.append(accuracy)
 
-            self.print_accuracy_drift(bot_name)  # Pass the bot_name argument)
+            self.print_accuracy_drift()
 
             return improved_response, accuracy
         
@@ -375,14 +282,13 @@ class SelfImprovingBot:
             return improved_response, accuracy
         else:
             return current_response, 0.0  # Return the original response and a default accuracy
-        
 
-    # def print_accuracy_drift(self):
-    #     if self.foreground_accuracy_history:
-    #         foreground_average_accuracy = sum(self.foreground_accuracy_history) / len(self.foreground_accuracy_history)
-    #         print("Avg. accuracy:", foreground_average_accuracy)
-    #     else:
-    #         print("No accuracy data yet.")
+    def print_accuracy_drift(self):
+        if self.foreground_accuracy_history:
+            foreground_average_accuracy = sum(self.foreground_accuracy_history) / len(self.foreground_accuracy_history)
+            print("Avg. accuracy:", foreground_average_accuracy)
+        else:
+            print("No accuracy data yet.")
 
         # if self.background_accuracy_history:
         #     background_average_accuracy = sum(self.background_accuracy_history) / len(self.background_accuracy_history)
@@ -511,43 +417,48 @@ class SelfImprovingBot:
 
     def simulate_conversation(self):
         with self.simulate_conversation_lock:
-            while True:  # Continuously attempt to fetch articles and process them
-                self.analyze_accuracy_drift(bot_name)
-                try:
-                    # Get a random article title from Wikipedia
-                    article_title = wikipedia.random()
+            random_sentence = random.choice(brown.sents())
+            random_sentence = ' '.join(random_sentence)
+            initial_user_input = str(f"{random_sentence}")
+            conversation = self.generate_random_conversation(initial_user_input)  # Generate a random conversation
+            for user_input, lang in conversation:
+                random_paragraph = " ".join(" ".join(sentence) for sentence in (random.choice(brown.sents()) for _ in range(5)))
 
-                    # Retrieve the article object
-                    article = wikipedia.page(article_title)
+                # Tokenize the paragraph into sentences
+                sentences = nltk.sent_tokenize(random_paragraph)
 
-                    # Tokenize the entire article content into sentences
-                    sentences = nltk.sent_tokenize(article.content)
+                # Ensure there are at least four sentences
+            if len(sentences) >= 4:
+                    # Extract two consecutive sentences from the same paragraph
+                sentence1 = sentences[0]
+                sentence2 = sentences[1]
+                accuracy = 1
+                # accuracy = self.compare_sentences(sentence1, sentence2)
+                user_input = f"Time organizes randomness(sim-input). Sentence1: {sentence1} Sentence2: {sentence2} Accuracy: {accuracy:.2f}"
+                #user_input = str(f"Time organizes randomness(simInput-response). {sentence1} {sentence2}")
+                #self.update_context_history(str(user_input))
+                print("SIM User Input:", user_input)              
+                
+                # Extract two consecutive sentences from the same paragraph
+                sentence3 = sentences[2]
+                sentence4 = sentences[3]
+                accuracy = 1
+                #accuracy = self.compare_sentences(sentence1, sentence2)
+                response = f"Time organizes randomness(sim-response). Sentence1: {sentence3} Sentence2: {sentence4} Accuracy: {accuracy:.2f}"
 
-                    # Process the sentences in pairs
-                    for i in range(0, len(sentences), 2):
-                        if i + 1 < len(sentences):  # Ensure there are at least two sentences remaining
-                            sentence1 = sentences[i]
-                            sentence2 = sentences[i + 1]
+                print("Sim Bot response:", response, accuracy)
+                improved_response, accuracy = self.improve_own_code(response, user_input)
 
-                            # Process sentence pair as needed
-                            self.process_sentence_pair(sentence1, sentence2)
-                            time.sleep(0.1)
-                except (wikipedia.exceptions.PageError, wikipedia.exceptions.DisambiguationError):
-                    # Handle the exception and continue to the next iteration
-                    print("Encountered an error. Trying another article...")
-                    continue
-
-    def process_sentence_pair(self, sentence1, sentence2):
-        accuracy = 1  # Your accuracy calculation logic here
-
-        user_input = f"Time organizes randomness(sim-input). Sentence1: {sentence1} Sentence2: {sentence2} Accuracy: {accuracy:.2f}"
-        print("SIM User Input:", user_input)
-
-        response = f"Time organizes randomness(sim-response). Sentence1: {sentence1} Sentence2: {sentence2} Accuracy: {accuracy:.2f}"
-        print("Sim Bot response:", response, accuracy)
-
-        improved_response, accuracy = self.improve_own_code(response, user_input)
-        print(f"Improved response: {improved_response} (Accuracy: {accuracy})")
+                #time.sleep(random.randint(1, 2))
+                # time.sleep(0.1)
+                
+                print(f"Improved response: {improved_response} (Accuracy: {accuracy})")
+                # self.improve_own_knowledge()
+                self.optimize_resources()
+                self.self_improve()
+            else:
+                print("Not enough sentences in the paragraph to extract four sentences.")
+                self.simulate_conversation()
 
     def generate_random_conversation(self, initial_user_input):
         num_turns = random.randint(3, 10)  # Generate a random number of conversation turns
@@ -580,39 +491,12 @@ class SelfImprovingBot:
     def conceptualize_difference(self, old_info, new_info):
         conceptualized_difference = "Conceptualized Difference"
         return conceptualized_difference
-    
-    def analyze_accuracy_drift(self, bot_name):
-        num_iterations_for_change = self.find_change_iteration(bot_name)
-
-        if len(self.foreground_accuracy_history) >= num_iterations_for_change:
-            last_n_avg_accuracy = sum(self.foreground_accuracy_history[-num_iterations_for_change:]) / num_iterations_for_change
-
-            if self.last_foreground_average_accuracy is not None:
-                if last_n_avg_accuracy > self.last_foreground_average_accuracy:
-                    avg_accuracy_color = "green"
-                    self.accuracy_change_count += 1
-                elif last_n_avg_accuracy < self.last_foreground_average_accuracy:
-                    avg_accuracy_color = "red"
-                    self.accuracy_change_count += 1
-                else:
-                    avg_accuracy_color = "blue"
-
-                bot_color = self.generate_unique_color(bot_name)
-
-                avg_accuracy_colored = colored(f"Average Accuracy: {last_n_avg_accuracy:.4f}", avg_accuracy_color)
-                bot_name_colored = colored(bot_name, bot_color, attrs=["bold"])
-
-                print(f"{bot_name_colored}, {avg_accuracy_colored}, Count: {self.accuracy_change_count}")
-                self.last_foreground_average_accuracy = last_n_avg_accuracy
-        else:
-            print(f"{bot_name}, Not enough iterations for accuracy comparison.")
 
 def bot_process(bot_name):
     bot = SelfImprovingBot(max_context_length=5000, dynamic_context_window=550, name=bot_name)
     print(f"{bot_name} is ready.")
-
+    
     while True:
-        bot.print_accuracy_drift(bot_name)
         bot.simulate_conversation()
         time.sleep(random.randint(1, 2))  # Add some delay between conversations
 

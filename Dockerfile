@@ -20,11 +20,13 @@ COPY bot.py .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install Levenshtein
 RUN pip install requests
-RUN pip install matplotlib
+#RUN pip install matplotlib
 RUN pip install numpy
 RUN pip install scikit-learn
 RUN pip install nltk
 RUN pip install termcolor
+#RUN pip install pygame
+RUN pip install wikipedia
 
 # Install ROCm dependencies if ROCM environment variable is set
 # ARG ROCM

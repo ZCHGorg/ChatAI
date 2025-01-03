@@ -1,95 +1,99 @@
-<h1 align="center">
-  <br>
-  <br>
-  Distributed Machine Learning Swarm Bot Trainer with Docker
-  <br>
-</h1>
+ALPHA VERSION doesn't work great, but it should at least deploy well and help you get started.  WARNING: will flood swapfile as of latest version.  Proceed with caution in an isolated environment.  I recommend vultr.com Centos8 node
 
-<p align="center">
-  <strong>Simulate Conversations with GPU Power</strong>
-</p>
+# 🌟 Unleash the Power of Self-Improving Bots! 🚀
 
-<p align="center">
-  <a href="#features">Features</a> •
-  <a href="#getting-started">Getting Started</a> •
-  <a href="#use-cases">Use Cases</a> •
-  <a href="#contributing">Contributing</a> •
-  <a href="#credits">Credits</a>
-</p>
+Welcome to ZchgAIBot – a cutting-edge platform that brings the future to your fingertips. Prepare to be amazed as our Self-Improving Bot evolves before your eyes, delivering more intelligent and sophisticated interactions with each conversation.
 
-<p align="center">
-  <img src="chatbot_demo.gif" alt="Distributed Chatbot Demo">
-</p>
+## What is ZchgAIBot?
 
-## Features
+ZchgAIBot is more than just a bot; it's a window into the next era of AI interaction. We've harnessed the capabilities of OpenAI's state-of-the-art GPT-3 model and paired it with ingenious self-improvement mechanisms. The outcome? A bot that learns, adapts, and polishes its responses, making each interaction truly unique.
 
-- **Effortless Deployment:** Quickly deploy the chatbot using Docker. Simply run a few commands or use the provided scripts.
-- **Self-Improvement:** The chatbot learns and adapts from conversations, delivering context-aware and engaging responses.
-- **GPU Acceleration:** Boost your chatbot's performance with GPU support (NVIDIA's CUDA or AMD's ROCm) for advanced users.
+## Key Features
+
+- **Unparalleled Learning:** Witness your bot learn from user feedback and its own conversations, honing its responses to perfection.
+  
+- **Seamless Integration:** Effortlessly deploy and run the Self-Improving Bot using Docker, ensuring a seamless experience across various systems.
+
+- **Dynamic Context:** Our bot retains prior interactions, maintaining context to provide more pertinent and captivating responses.
+
+- **Resource Optimization:** Intelligent resource management guarantees peak bot performance, regardless of the conversation's intricacy.
+
+- **User Feedback Loop:** The bot refines its conversational prowess based on user feedback, progressively enhancing its abilities.
+
+## Use Cases
+
+ZchgAIBot's potential is boundless, presenting value across diverse domains:
+
+- **Customer Support:** Revolutionize customer interactions with an AI assistant that offers intuitive solutions and learns from each support ticket.
+
+- **Education:** Craft a dynamic learning companion that engages students in personalized, educational dialogues.
+
+- **Creative Writing:** Collaborate with the bot to brainstorm ideas, receive suggestions, and elevate your creative writing endeavors.
+
+- **Problem Solving:** Turn to ZchgAIBot for inventive problem-solving discussions, where the bot's insights could be the game-changer.
 
 ## Getting Started
 
-1. **Install Dependencies:**
-   - **For General Usage (CPU):**
-     Open a terminal and run the following command to install Docker and its dependencies:
-     ```bash
-     ./GPUdeploy_bot.sh
-     ```
+To embark on this exciting journey, refer to our comprehensive installation guide below. Set up your Self-Improving Bot and witness AI evolution firsthand.
 
-   - **For NVIDIA GPUs (CUDA):**
-     Open Command Prompt and execute the following command to build and run the chatbot container with Numba and CUDA support:
-     ```bat
-     Deploy_bot_windows.bat
-     ```
+## Connect with Us
 
-   - **For AMD GPUs (ROCm Support):**
-     Run the following command in a terminal to install ROCm dependencies and configure Docker for AMD GPU acceleration:
-     ```bash
-     ./DockerRoCMDeploy_bot.sh
-     ```
+Stay updated and share your experiences on social media using **#ZchgAIBotAI**. We're eager to see the remarkable interactions you create!
 
-2. **Build and Launch the Docker Container:**
-   Navigate to the directory with the Dockerfile and run the following commands:
-   ```bash
-   docker build -t bot .
-   docker run -it --rm --name bot_container bot
-Engage in Conversations:
-Once the container is running, use the included Python script bot.py to simulate conversations and observe the chatbot's self-improvement. In the container's terminal, run:
-bash
-Copy code
-python bot.py simulate_conversation
-Use Cases
-Customer Support: Automate responses to common queries for swift customer service.
-Language Learning: Facilitate language learning via simulated conversations.
-Entertainment: Craft interactive and amusing chatbot experiences.
-Research: Experiment with AI and NLP techniques for research and analysis.
-Contributing
-Contributions are welcomed! Feel free to fork this repository, enhance, and submit pull requests. If you come across any issues or have suggestions, please open an issue.
+---
 
-Credits
-Developed by: [Josef Kulovany]. Inspired by advancements in AI and NLP over at https://zchg.org
+## Self-Improving Bot Installation Guide
 
-Disclaimer
-This chatbot is designed for educational and experimental purposes. It lacks real-world intelligence. Use AI responsibly and consider ethical implications.
+Welcome to the installation guide for the Self-Improving Bot! We're thrilled to have you on board. To get this innovative bot up and running, follow these steps:
+
+### Prepare Your Environment
+
+Designed for CentOS 8
+
+First, ensure that you have all the required files in the same directory, including `deploy_bot.sh`, `requirements.txt`, `self_improving_bot.py`, and `Dockerfile`.
+
+Remember to replace `'GIVE_ME_YOUR_API_KEY_HERE'` with your Chat GPT API key!
+
+### Install Docker with Ease
+
+We've simplified the process with a convenient shell script. Open your terminal, navigate to the directory containing the files, and execute the following commands:
+
+```shell
+chmod +x deploy_bot.sh
+./deploy_bot.sh
+```
+This script will handle Docker installation, ensuring you're ready to go in no time.
+
+Build and Launch the Bot
+Once Docker is set up, it's time to build and launch your Self-Improving Bot. Run these commands sequentially:
+
+```shell
+docker build -t self_improving_bot -f Dockerfile --no-cache .
+```
+
+```shell
+docker run -it --rm --network host --privileged --name self_improving_bot_container self_improving_bot
+```
+
+Your bot will spring to life, poised to engage in conversations and learn from interactions.
+
+Ensure Compatibility-
+If issues arise due to file conversions from Windows to Linux, don't fret – we've got you covered. Execute the following commands to address any concerns:
+
+```shell
+sudo yum install dos2unix
+dos2unix deploy_bot.sh requirements.txt self_improving_bot.py Dockerfile
+```
+
+These commands guarantee a seamless experience by formatting everything perfectly.
+
+Now you're all set to witness the magic of the Self-Improving Bot! Engage in conversations, observe its learning, and watch its responses evolve over time. Feel free to explore and customize the bot's behavior to match your unique use cases.
+
+Should questions arise or issues arise, don't hesitate to reach out to our support team. Happy bot-building! 🤖🌟
 
 <p align="center">
-  Made with ❤️ by <a href="https://zchg.org">zchg.org</a>
+  Made with ❤️ by the innovators at https://forum.zchg.org
 </p>
-```
-This version includes the instructions for launching the Docker container using the bot.py script within the container to simulate conversations.
 
-New version:
-![image](https://github.com/ZCHGorg/ChatAI/assets/24325826/07e965d5-372a-4fa8-8557-a86ba4073784)
-![image](https://github.com/ZCHGorg/ChatAI/assets/24325826/15c2a25e-1ba6-4042-96ba-fcc18680447f)
-![image](https://github.com/ZCHGorg/ChatAI/assets/24325826/64961613-9d7f-4f7a-9765-9b9b83de47de)
-![image](https://github.com/ZCHGorg/ChatAI/assets/24325826/5248e046-a0f7-488d-a363-b3d665e4280a)
-![image](https://github.com/ZCHGorg/ChatAI/assets/24325826/ae705200-45cb-47f5-83da-64574cb3c06b)
-![image](https://github.com/ZCHGorg/ChatAI/assets/24325826/f3e5cdb9-1934-417b-ae48-46b1620210fe)
-
-
-
-
-
-
-
+![image](https://github.com/ZCHGorg/ChatAI/assets/24325826/04302ee3-0617-4272-a072-8ce6267488a0)
 
