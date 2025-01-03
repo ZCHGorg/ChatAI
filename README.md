@@ -1,4 +1,9 @@
-ALPHA VERSION doesn't work great, but it should at least deploy well and help you get started.  WARNING: will flood swapfile as of latest version.  Proceed with caution in an isolated environment.  I recommend vultr.com Centos8 node
+https://zchg.org/t/distributed-ai-bot-trainer-in-alpha-is-here/496/12
+
+THIS SHOULD HELP!
+https://www.youtube.com/watch?v=C62THVAeFA4
+
+ALPHA VERSION 0.0.6 - WARNING: will flood swapfile and potentially other ballooning assets as of latest version.  Proceed with caution in an isolated environment.  I recommend vultr.com Centos8 node
 
 # 🌟 Unleash the Power of Self-Improving Bots! 🚀
 
